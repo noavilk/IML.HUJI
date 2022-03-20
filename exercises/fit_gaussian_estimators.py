@@ -1,30 +1,97 @@
+from plotnine import geom_point
+
 from IMLearn.learners import UnivariateGaussian, MultivariateGaussian
 import numpy as np
 import plotly.graph_objects as go
 import plotly.io as pio
+from plotnine import *
+import pandas as pd
+
+NUM_OF_F = 200
+
 pio.templates.default = "simple_white"
+# univariate:
+TRUE_MU_UNI = 10
+SD_UNI = 1
 
 
 def test_univariate_gaussian():
     # Question 1 - Draw samples and print fitted model
-    raise NotImplementedError()
+    data = np.random.normal(TRUE_MU_UNI, SD_UNI, size=1000)
+    uni_gaussian = UnivariateGaussian()
+    uni_gaussian.fit(data)
+    print(uni_gaussian.mu_, uni_gaussian.var_)
 
     # Question 2 - Empirically showing sample mean is consistent
-    raise NotImplementedError()
+    sample_size = np.arange(10, 1001, 10)
+    mu_list = list()
+
+    for size in sample_size:
+        uni_gaussian.fit(data[0:size])
+        mu = uni_gaussian.mu_
+        mu_list.append(mu)
+    mu_list = np.array(mu_list)
+    mu_diff = np.abs(mu_list - TRUE_MU_UNI)
+    mu_df = pd.DataFrame(data={"mu": mu_diff, "Sample Size": sample_size})
+    p1 = ggplot(mu_df) + geom_point(aes("Sample Size", "mu")) + \
+         ggtitle("Connection Between Sample Size And Mu Estimation") + theme_bw() + \
+         ylab("Distance Between The Estimated \n And True Value Of The Expectation")
+    ggsave(filename="Size mu", plot=p1, width=10, height=5, path="../../IML/ex1", device="png", verbose=False)
+
+    print(p1)
 
     # Question 3 - Plotting Empirical PDF of fitted model
-    raise NotImplementedError()
+    sorted_data = np.sort(data)
+    pdf = uni_gaussian.pdf(sorted_data)
+    pdf_df = pd.DataFrame({"Sample Value": sorted_data, "PDF": pdf})
+    p2 = ggplot(pdf_df) + geom_point(aes("Sample Value", "PDF")) + \
+         ggtitle("Empirical Probability Distribution Function \nUnder The Fitted Model") + theme_bw()
+    ggsave(filename="PDF", plot=p2, width=10, height=5, path="../../IML/ex1", device="png", verbose=False)
+
+    print(p2)
 
 
 def test_multivariate_gaussian():
     # Question 4 - Draw samples and print fitted model
-    raise NotImplementedError()
+    mu = np.array([0, 0, 4, 0])
+    sigma = np.eye(4)
+    sigma[0, 1] = 0.2
+    sigma[0, 3] = 0.5
+    sigma[1, 0] = 0.2
+    sigma[1, 1] = 2
+    sigma[3, 0] = 0.5
+
+    data = np.random.multivariate_normal(mu, sigma, 1000)
+
+    multi = MultivariateGaussian()
+    multi.fit(data)
+    print(multi.mu_)
+    print(multi.cov_)
 
     # Question 5 - Likelihood evaluation
-    raise NotImplementedError()
+    f = np.linspace(-10, 10, NUM_OF_F)
+
+    # grid = np.array(np.meshgrid(f, f)).T.reshape(-1, 2)
+    a = np.repeat(f, NUM_OF_F)
+    b = np.tile(f, NUM_OF_F)
+    mu_table = np.zeros((NUM_OF_F * NUM_OF_F, 4))
+    mu_table[:, 0] = a
+    mu_table[:, 2] = b
+    # print(multi.log_likelihood(mu_table[0,:], sigma, data))
+
+    func = lambda x: multi.log_likelihood(x, sigma, data)
+    ll = np.apply_along_axis(func, 1, mu_table)
+    df = pd.DataFrame({"f1": a, "f3": b, "LL value": ll})
+    p = ggplot(df, aes("f1", "f3", fill=df["LL value"])) + geom_tile() + \
+        ggtitle("Heatmap Of Log-Likelihood By Values Of f1, f3") + \
+        theme_bw() + xlab("f1 Value") + ylab("f2 Value")
+    ggsave(filename="heatmap", plot=p, width=10, height=5, path="../../IML/ex1", device="png", verbose=False)
+
+    print(p)
 
     # Question 6 - Maximum likelihood
-    raise NotImplementedError()
+    idx = np.argmax(ll)
+    print(a[idx], b[idx])
 
 
 if __name__ == '__main__':
