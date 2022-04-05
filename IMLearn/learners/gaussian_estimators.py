@@ -55,8 +55,6 @@ class UnivariateGaussian:
         self.mu_ = np.mean(X)
         self.var_ = np.var(X, ddof=0) if self.biased_ else np.var(X, ddof=1)
 
-        # print(f'({self.mu_}, {self.var_})')
-
         self.fitted_ = True
         return self
 
@@ -190,7 +188,7 @@ class MultivariateGaussian:
         m, d = X.shape
         centroid = X - self.mu_
         den = np.sqrt(np.power((np.pi * 2), d) * det(self.cov_))
-        num = np.exp(- 0.5 * (centroid.T @ inv(self.cov_) @ centroid))
+        num = np.exp(- 0.5 * np.diagonal(centroid @ inv(self.cov_) @ centroid.T))
         return num / den
 
     @staticmethod
@@ -217,5 +215,5 @@ class MultivariateGaussian:
         a = (m * d * np.log(2 * np.pi)) / 2
         sign, logdet = slogdet(cov)
         b = (m * sign * logdet) / 2
-        c = np.sum(centroid @ inv(cov) @ centroid.T) / 2
+        c = np.sum(np.diagonal(centroid @ inv(cov) @ centroid.T)) / 2
         return -a - b - c

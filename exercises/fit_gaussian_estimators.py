@@ -20,7 +20,7 @@ def test_univariate_gaussian():
     data = np.random.normal(TRUE_MU_UNI, SD_UNI, size=1000)
     uni_gaussian = UnivariateGaussian()
     uni_gaussian.fit(data)
-    print(uni_gaussian.mu_, uni_gaussian.var_)
+    print(np.round(uni_gaussian.mu_, decimals=3), np.round(uni_gaussian.var_, decimals=3))
 
     # Question 2 - Empirically showing sample mean is consistent
     sample_size = np.arange(10, 1001, 10)
@@ -36,7 +36,7 @@ def test_univariate_gaussian():
     p1 = ggplot(mu_df) + geom_point(aes("Sample Size", "mu")) + \
          ggtitle("Connection Between Sample Size And Mu Estimation") + theme_bw() + \
          ylab("Distance Between The Estimated \n And True Value Of The Expectation")
-    ggsave(filename="Size mu", plot=p1, width=10, height=5, path="../../IML/ex1", device="png", verbose=False)
+    ggsave(filename="Size mu", plot=p1, path="../../IML/ex1", device="png", verbose=False)
 
     print(p1)
 
@@ -46,7 +46,7 @@ def test_univariate_gaussian():
     pdf_df = pd.DataFrame({"Sample Value": sorted_data, "PDF": pdf})
     p2 = ggplot(pdf_df) + geom_point(aes("Sample Value", "PDF")) + \
          ggtitle("Empirical Probability Distribution Function \nUnder The Fitted Model") + theme_bw()
-    ggsave(filename="PDF", plot=p2, width=10, height=5, path="../../IML/ex1", device="png", verbose=False)
+    ggsave(filename="PDF", plot=p2, path="../../IML/ex1", device="png", verbose=False)
 
     print(p2)
 
@@ -65,8 +65,8 @@ def test_multivariate_gaussian():
 
     multi = MultivariateGaussian()
     multi.fit(data)
-    print(multi.mu_)
-    print(multi.cov_)
+    print(np.round(multi.mu_, decimals=3))
+    print(np.round(multi.cov_, decimals=3))
 
     # Question 5 - Likelihood evaluation
     f = np.linspace(-10, 10, NUM_OF_F)
@@ -82,16 +82,16 @@ def test_multivariate_gaussian():
     func = lambda x: multi.log_likelihood(x, sigma, data)
     ll = np.apply_along_axis(func, 1, mu_table)
     df = pd.DataFrame({"f1": a, "f3": b, "LL value": ll})
-    p = ggplot(df, aes("f1", "f3", fill=df["LL value"])) + geom_tile() + \
+    p = ggplot(df, aes("f3", "f1", fill=df["LL value"])) + geom_tile() + \
         ggtitle("Heatmap Of Log-Likelihood By Values Of f1, f3") + \
-        theme_bw() + xlab("f1 Value") + ylab("f2 Value")
-    ggsave(filename="heatmap", plot=p, width=10, height=5, path="../../IML/ex1", device="png", verbose=False)
+        theme_bw() + xlab("f3 Value") + ylab("f1 Value")
+    ggsave(filename="heatmap", plot=p, path="../../IML/ex1", device="png", verbose=False)
 
     print(p)
 
     # Question 6 - Maximum likelihood
     idx = np.argmax(ll)
-    print(a[idx], b[idx])
+    print(np.round(a[idx], decimals=3), np.round(b[idx], decimals=3))
 
 
 if __name__ == '__main__':
