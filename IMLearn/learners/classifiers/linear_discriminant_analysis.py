@@ -25,6 +25,7 @@ class LDA(BaseEstimator):
     self.pi_: np.ndarray of shape (n_classes)
         The estimated class probabilities. To be set in `GaussianNaiveBayes.fit`
     """
+
     def __init__(self):
         """
         Instantiate an LDA classifier
@@ -46,7 +47,21 @@ class LDA(BaseEstimator):
         y : ndarray of shape (n_samples, )
             Responses of input data to fit to
         """
-        raise NotImplementedError()
+        self.classes_, nk = np.unique(y, return_counts=True)
+        self.pi_ = nk / y.size
+
+        sorted_i = np.argsort(y)
+        X_sort = X[sorted_i]
+        nk_sum = np.cumsum(nk)
+        nk_sum = np.insert(nk_sum, 0, 0)
+        nk_sum = nk_sum[:-1]
+        self.mu_ = np.add.reduceat(X_sort, nk_sum, axis=0) / nk[:, np.newaxis]
+
+        mu_dup = np.repeat(self.mu_, nk, axis=0)
+        centroid = X_sort - mu_dup
+        self.cov_ = np.sum(centroid[:, :, np.newaxis] @ centroid[:, np.newaxis, :], axis=0) / (
+                    y.size - self.classes_.size)
+        self._cov_inv = inv(self.cov_)
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -62,7 +77,9 @@ class LDA(BaseEstimator):
         responses : ndarray of shape (n_samples, )
             Predicted responses of given samples
         """
-        raise NotImplementedError()
+        ll = self.likelihood(X)
+        res = np.argmax(ll, axis=1)
+        return self.classes_[res]
 
     def likelihood(self, X: np.ndarray) -> np.ndarray:
         """
@@ -82,7 +99,9 @@ class LDA(BaseEstimator):
         if not self.fitted_:
             raise ValueError("Estimator must first be fitted before calling `likelihood` function")
 
-        raise NotImplementedError()
+        ak = self._cov_inv @ self.mu_.T
+        bk = np.log(self.pi_) - 0.5 * np.diagonal(self.mu_ @ self._cov_inv @ self.mu_.T)
+        return X @ ak + bk
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """
@@ -102,4 +121,5 @@ class LDA(BaseEstimator):
             Performance under missclassification loss function
         """
         from ...metrics import misclassification_error
-        raise NotImplementedError()
+        y_pred = self._predict(X)
+        return misclassification_error(y, y_pred)

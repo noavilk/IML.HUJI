@@ -31,10 +31,12 @@ class Perceptron(BaseEstimator):
             A callable to be called after each update of the model while fitting to given data
             Callable function should receive as input a Perceptron instance, current sample and current response
     """
+
     def __init__(self,
                  include_intercept: bool = True,
                  max_iter: int = 1000,
                  callback: Callable[[Perceptron, np.ndarray, int], None] = default_callback):
+
         """
         Instantiate a Perceptron classifier
 
@@ -73,7 +75,21 @@ class Perceptron(BaseEstimator):
         -----
         Fits model with or without an intercept depending on value of `self.fit_intercept_`
         """
-        raise NotImplementedError()
+        if self.include_intercept_:
+            X = np.hstack((np.ones(X.shape[0]).reshape(X.shape[0], 1), X))
+        self.coefs_ = np.zeros(X.shape[1])
+        self.fitted_ = True
+
+        for i in range(self.max_iter_):
+            y_pred = np.sign(X @ self.coefs_.reshape((1, self.coefs_.size)).T)
+            y_pred[y_pred == 0] = 1
+            y_pred = y_pred.squeeze()
+            mistakes = np.where(y_pred * y <= 0)[0]
+            if mistakes.size == 0:
+                break
+            mistakes = mistakes[0]
+            self.coefs_ += y[mistakes] * X[mistakes]
+            self.callback_(self, X[mistakes], y[mistakes])
 
     def _predict(self, X: np.ndarray) -> np.ndarray:
         """
@@ -89,7 +105,11 @@ class Perceptron(BaseEstimator):
         responses : ndarray of shape (n_samples, )
             Predicted responses of given samples
         """
-        raise NotImplementedError()
+        if self.include_intercept_:
+            X = np.hstack((np.ones(X.shape[0]).reshape(X.shape[0], 1), X))
+        y_pred = np.sign(X @ self.coefs_.reshape((1, self.coefs_.size)).T)
+        y_pred[y_pred == 0] = 1
+        return y_pred
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """
@@ -109,4 +129,5 @@ class Perceptron(BaseEstimator):
             Performance under missclassification loss function
         """
         from ...metrics import misclassification_error
-        raise NotImplementedError()
+        y_pred = self._predict(X)
+        return misclassification_error(y, y_pred)
