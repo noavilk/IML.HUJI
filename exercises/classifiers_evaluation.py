@@ -60,7 +60,6 @@ def run_perceptron():
         title = f'Loss per Iteration For {n} data'
         p = gg.ggplot(df) + gg.geom_line(gg.aes("Iteration", "Loss")) + gg.ggtitle(
             title) + gg.theme_bw()
-        print(p)
         gg.ggsave(filename=f'../../IML/ex3/plots/{title}.png', plot=p, verbose=False)
 
 
@@ -164,4 +163,4 @@ def compare_gaussian_classifiers():
 if __name__ == '__main__':
     np.random.seed(0)
     run_perceptron()
-    compare_gaussian_classifiers()
+    # compare_gaussian_classifiers()
