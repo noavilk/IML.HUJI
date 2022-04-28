@@ -52,7 +52,7 @@ class GaussianNaiveBayes(BaseEstimator):
         mu_dup = np.repeat(self.mu_, nk, axis=0)
         centroid = X_sort - mu_dup
         var = centroid[:, :, np.newaxis] @ centroid[:, np.newaxis, :]
-        self.vars_ = np.add.reduceat(var, nk_sum, axis=0) / (nk - self.classes_.size)[:, np.newaxis, np.newaxis]
+        self.vars_ = np.add.reduceat(var, nk_sum, axis=0) / (nk - 1)[:, np.newaxis, np.newaxis]
         self.vars_ = np.diagonal(self.vars_, axis1=1, axis2=2)
 
     def _predict(self, X: np.ndarray) -> np.ndarray:

@@ -116,6 +116,8 @@ def compare_gaussian_classifiers():
         acc_lda = accuracy(y_true, y_pred_lda)
         acc_gnb = accuracy(y_true, y_pred_gnb)
 
+        print(acc_lda, acc_gnb)
+
         type_lda = f"Linear discriminant Analysis \nAccuracy = {round(acc_lda, 3)}"
         type_gnb = f"Gaussian Naive Bayes \nAccuracy = {round(acc_gnb, 3)}"
         df_ellipse = None
@@ -163,4 +165,4 @@ def compare_gaussian_classifiers():
 if __name__ == '__main__':
     np.random.seed(0)
     run_perceptron()
-    # compare_gaussian_classifiers()
+    compare_gaussian_classifiers()
