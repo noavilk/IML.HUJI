@@ -18,7 +18,6 @@ def mean_square_error(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     """
     return np.sum((y_pred - y_true) ** 2) / y_pred.shape[0]
 
-
 def misclassification_error(y_true: np.ndarray, y_pred: np.ndarray, normalize: bool = True) -> float:
     """
     Calculate misclassification loss
